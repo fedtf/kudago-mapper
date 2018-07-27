@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <item key="103272" type="event">
+    <key>103272</key>
+    <type>event</type>
+    <action>10960</action>
+    <hall_id>310712</hall_id>
+    <name>Original Meet 2017</name>
+    <category>Фестивали</category>
+    <category>Музыкальные фестивали</category>
+    <category>Фестивали на открытом воздухе</category>
+    <category>Другое</category>
+    <price_min>400</price_min>
+    <price_max>400</price_max>
+    <age_group_id>5</age_group_id>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/event/view/103272</originalUrl>
+    <date>2017-09-10 13:00:00</date>
+    <end_date>2017-09-10 20:00:00</end_date>
+  </item>
+  <item key="103271" type="event">
+    <key>103271</key>
+    <type>event</type>
+    <action>10960</action>
+    <hall_id>310712</hall_id>
+    <name>Original Meet 2017</name>
+    <category>Фестивали</category>
+    <category>Музыкальные фестивали</category>
+    <category>Фестивали на открытом воздухе</category>
+    <category>Другое</category>
+    <price_min>400</price_min>
+    <price_max>400</price_max>
+    <age_group_id>5</age_group_id>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/event/view/103271</originalUrl>
+    <date>2017-09-09 13:00:00</date>
+    <end_date>2017-09-09 21:00:00</end_date>
+  </item>
+  <item key="103270" type="event">
+    <key>103270</key>
+    <type>event</type>
+    <action>13985</action>
+    <hall_id>1099</hall_id>
+    <name>Балет на льду "Вечер балета"</name>
+    <category>Театр</category>
+    <category>Балет / Танец</category>
+    <price_min>500</price_min>
+    <price_max>1200</price_max>
+    <age_group_id>1</age_group_id>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/event/view/103270</originalUrl>
+    <date>2017-10-29 19:00:00</date>
+    <end_date>2017-10-29 19:01:00</end_date>
+  </item>
+</root>
