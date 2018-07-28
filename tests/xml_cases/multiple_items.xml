@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <item key="310712" type="hall">
-    <key>310712</key>
+  <item id="310712" type="hall">
+    <id>310712</id>
     <type>hall</type>
     <name>Городское пространство "Порт Севкабель"</name>
     <originalUrl>https://spb.kassir.ru/kassir/hall/view/310712</originalUrl>
   </item>
   <item key="1099" type="hall">
-    <key>1099</key>
+    <id>1099</id>
     <type>hall</type>
     <name>ДК Выборгский</name>
     <originalUrl>
     https://spb.kassir.ru/kassir/hall/view/1099</originalUrl>
   </item>
-  <item key="1022" type="hall">
-    <key>1022</key>
+  <item id="1022" type="hall">
+    <id>1022</id>
     <type>hall</type>
     <name>ДК Выборгский (Малый зал)</name>
     <originalUrl>
     https://spb.kassir.ru/kassir/hall/view/1022</originalUrl>
   </item>
-  <item key="1061" type="hall">
-    <key>1061</key>
+  <item id="1061" type="hall">
+    <id>1061</id>
     <type>hall</type>
     <name>Концертный Зал Колизей</name>
     <originalUrl>

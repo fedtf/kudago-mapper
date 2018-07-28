@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <item id="526" type="artist">
+    <id>526</id>
+    <type>artist</type>
+    <action>10960</action>
+    <action>13985</action>
+    <name>Boris Johnson</name>
+  </item>
+  <item id="210" type="event">
+    <id>210</id>
+    <type>artist</type>
+    <action>10960, 13985</action>
+    <name>Richelieu</name>
+  </item>
+  <item id="926" type="event">
+    <id>926</id>
+    <type>artist</type>
+    <action>13985</action>
+    <name>Otto von Bismarck</name>
+  </item>
+</root>

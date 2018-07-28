@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <item key="103272" type="event">
-    <key>103272</key>
+  <item id="103272" type="event">
+    <id>103272</id>
     <type>event</type>
     <action>10960</action>
     <hall_id>310712</hall_id>
@@ -18,8 +18,8 @@
     <date>2017-09-10 13:00:00</date>
     <end_date>2017-09-10 20:00:00</end_date>
   </item>
-  <item key="103271" type="event">
-    <key>103271</key>
+  <item id="103271" type="event">
+    <id>103271</id>
     <type>event</type>
     <action>10960</action>
     <hall_id>310712</hall_id>
@@ -36,8 +36,8 @@
     <date>2017-09-09 13:00:00</date>
     <end_date>2017-09-09 21:00:00</end_date>
   </item>
-  <item key="103270" type="event">
-    <key>103270</key>
+  <item id="103270" type="event">
+    <id>103270</id>
     <type>event</type>
     <action>13985</action>
     <hall_id>1099</hall_id>

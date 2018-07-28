@@ -63,13 +63,13 @@ class XmlDictConfig(dict):
     def update(self, other):
         for key in other:
             if key in self:
-                if type(self[key]) == 'list':
-                    if type(other[key]) == 'list':
+                if isinstance(self[key], list):
+                    if isinstance(other[key], list):
                         self[key].extend(other[key])
                     else:
                         self[key].append(other[key])
                 else:
-                    if type(other[key]) == 'list':
+                    if isinstance(other[key], list):
                         self[key] = [self[key], *other[key]]
                     else:
                         self[key] = [other[key], self[key]]

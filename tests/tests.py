@@ -6,11 +6,8 @@ from django.test import TestCase
 
 from kudago_mapper.mappers import Mapper
 
-from .models import Action, Event, Hall, Artist
-from .mappers import HallXMLMapper, EventXMLMapper, ArtistXMLMapper
-
-
-from django.forms import modelformset_factory
+from .models import Action, Event, Hall, Artist, ActionThrough, ArtistThrough
+from .mappers import HallXMLMapper, EventXMLMapper, ArtistXMLMapper, ArtistThroughXMLMapper
 
 
 def get_payload(filepath):
@@ -40,13 +37,13 @@ class MapperTest(TestCase):
 
 class XMLMapperTest(TestCase):
     def create_halls_and_actions(self):
-        action0 = Action.objects.create(id=10960, name='Original Meet 2017',
+        action0 = Action.objects.create(id=10960, ext_id=10960, name='Original Meet 2017',
                                         url='https://spb.kassir.ru/kassir/action/view/10960')
-        action1 = Action.objects.create(id=13985, name='Балет на льду "Вечер балета"',
+        action1 = Action.objects.create(id=13985, ext_id=13985, name='Балет на льду "Вечер балета"',
                                         url='https://spb.kassir.ru/kassir/action/view/13985')
-        hall0 = Hall.objects.create(id=310712, name='Городское пространство "Порт Севкабель"',
+        hall0 = Hall.objects.create(id=310712, ext_id=310712, name='Городское пространство "Порт Севкабель"',
                                     url='https://spb.kassir.ru/kassir/hall/view/310712')
-        hall1 = Hall.objects.create(id=1099, name='ДК Выборгский',
+        hall1 = Hall.objects.create(id=1099, ext_id=1099, name='ДК Выборгский',
                                     url='https://spb.kassir.ru/kassir/hall/view/1099')
 
         return action0, action1, hall0, hall1
@@ -104,3 +101,19 @@ class XMLMapperTest(TestCase):
 
         actions = [(action0, action1,), (action0, action1,), (action0, action1)]
         self.assertEqual(actions, [tuple(artist.actions.all()) for artist in Artist.objects.all()])
+
+    def test_custom_fields(self):
+        action0 = ActionThrough.objects.create(id=10960, ext_id=10960, name='Original Meet 2017',
+                                               url='https://spb.kassir.ru/kassir/action/view/10960')
+        action1 = ActionThrough.objects.create(id=13985, ext_id=13985, name='Балет на льду "Вечер балета"',
+                                               url='https://spb.kassir.ru/kassir/action/view/13985')
+
+        payload = get_payload('artists2.xml')
+
+        ArtistThroughXMLMapper(payload).save()
+
+        actions = [(action0, action1,), (action0, action1,), (action1,)]
+        ext_ids = [210, 526, 926]
+
+        self.assertEqual(actions, [tuple(artist.actions.all()) for artist in ArtistThrough.objects.all()])
+        self.assertEqual(ext_ids, list(ArtistThrough.objects.values_list('ext_id', flat=True)))
