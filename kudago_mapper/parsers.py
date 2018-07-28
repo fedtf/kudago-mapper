@@ -31,7 +31,7 @@ class XmlDictConfig(dict):
     '''
     def __init__(self, parent_element):
         if parent_element.items():
-            self.update(dict(parent_element.items()))
+            self.update({'attr_{}'.format(key): value for key, value in parent_element.items()})
         for element in parent_element:
             if element:
                 # treat like dict - we assume that if the first two tags
@@ -47,15 +47,31 @@ class XmlDictConfig(dict):
                     aDict = {element[0].tag: XmlListConfig(element)}
                 # if the tag has attributes, add those to the dict
                 if element.items():
-                    aDict.update(dict(element.items()))
+                    aDict.update({'attr_{}'.format(key): value for key, value in element.items()})
                 self.update({element.tag: aDict})
             # this assumes that if you've got an attribute in a tag,
             # you won't be having any text. This may or may not be a
             # good idea -- time will tell. It works for the way we are
             # currently doing XML configuration files...
             elif element.items():
-                self.update({element.tag: dict(element.items())})
+                self.update({element.tag: {'attr_{}'.format(key): value for key, value in element.items()}})
             # finally, if there are no child tags and no attributes, extract
             # the text
             else:
                 self.update({element.tag: element.text})
+
+    def update(self, other):
+        for key in other:
+            if key in self:
+                if type(self[key]) == 'list':
+                    if type(other[key]) == 'list':
+                        self[key].extend(other[key])
+                    else:
+                        self[key].append(other[key])
+                else:
+                    if type(other[key]) == 'list':
+                        self[key] = [self[key], *other[key]]
+                    else:
+                        self[key] = [other[key], self[key]]
+            else:
+                self[key] = other[key]

@@ -21,3 +21,8 @@ class Action(models.Model):
     name = models.CharField(max_length=120)
     url = models.URLField()
     category = models.CharField(max_length=120)
+
+
+class Artist(models.Model):
+    name = models.CharField(max_length=120)
+    actions = models.ManyToManyField('Action')

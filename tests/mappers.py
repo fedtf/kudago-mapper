@@ -1,6 +1,6 @@
 from kudago_mapper.mappers import XMLMapper
 
-from .models import Hall, Event
+from .models import Hall, Event, Artist
 
 
 class HallXMLMapper(XMLMapper):
@@ -15,3 +15,10 @@ class EventXMLMapper(XMLMapper):
         model = Event
         fields = '__all__'
         field_map = {'originalUrl': 'url', 'date': 'start_date', 'hall_id': 'hall'}
+
+
+class ArtistXMLMapper(XMLMapper):
+    class Meta:
+        model = Artist
+        fields = ('name', 'actions',)
+        field_map = {'action': 'actions'}

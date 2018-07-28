@@ -6,8 +6,11 @@ from django.test import TestCase
 
 from kudago_mapper.mappers import Mapper
 
-from .models import Action, Event, Hall
-from .mappers import HallXMLMapper, EventXMLMapper
+from .models import Action, Event, Hall, Artist
+from .mappers import HallXMLMapper, EventXMLMapper, ArtistXMLMapper
+
+
+from django.forms import modelformset_factory
 
 
 def get_payload(filepath):
@@ -36,6 +39,18 @@ class MapperTest(TestCase):
 
 
 class XMLMapperTest(TestCase):
+    def create_halls_and_actions(self):
+        action0 = Action.objects.create(id=10960, name='Original Meet 2017',
+                                        url='https://spb.kassir.ru/kassir/action/view/10960')
+        action1 = Action.objects.create(id=13985, name='Балет на льду "Вечер балета"',
+                                        url='https://spb.kassir.ru/kassir/action/view/13985')
+        hall0 = Hall.objects.create(id=310712, name='Городское пространство "Порт Севкабель"',
+                                    url='https://spb.kassir.ru/kassir/hall/view/310712')
+        hall1 = Hall.objects.create(id=1099, name='ДК Выборгский',
+                                    url='https://spb.kassir.ru/kassir/hall/view/1099')
+
+        return action0, action1, hall0, hall1
+
     def test_single_object_created(self):
         payload = get_payload('single_item.xml')
 
@@ -65,18 +80,12 @@ class XMLMapperTest(TestCase):
         self.assertEqual(urls, list(Hall.objects.values_list('url', flat=True)))
 
     def test_create_with_date_decimal_foreign(self):
-        Action.objects.create(id=10960, name='Original Meet 2017',
-                              url='https://spb.kassir.ru/kassir/action/view/10960')
-        Action.objects.create(id=13985, name='Балет на льду "Вечер балета"',
-                              url='https://spb.kassir.ru/kassir/action/view/13985')
-        hall0 = Hall.objects.create(id=310712, name='Городское пространство "Порт Севкабель"',
-                                    url='https://spb.kassir.ru/kassir/hall/view/310712')
-        hall1 = Hall.objects.create(id=1099, name='ДК Выборгский',
-                                    url='https://spb.kassir.ru/kassir/hall/view/1099')
+        _, _, hall0, hall1 = self.create_halls_and_actions()
 
         payload = get_payload('events.xml')
 
         EventXMLMapper(payload).save()
+
         dates = [datetime.datetime(2017, 9, 10, 13),
                  datetime.datetime(2017, 9, 9, 13),
                  datetime.datetime(2017, 10, 29, 19)]
@@ -85,3 +94,13 @@ class XMLMapperTest(TestCase):
         self.assertEqual(dates, list(Event.objects.values_list('start_date', flat=True)))
         self.assertEqual(prices, list(Event.objects.values_list('price_max', flat=True)))
         self.assertEqual(halls, [event.hall for event in Event.objects.all()])
+
+    def test_create_with_m2m(self):
+        action0, action1, _, _ = self.create_halls_and_actions()
+
+        payload = get_payload('artists.xml')
+
+        ArtistXMLMapper(payload).save()
+
+        actions = [(action0, action1,), (action0, action1,), (action0, action1)]
+        self.assertEqual(actions, [tuple(artist.actions.all()) for artist in Artist.objects.all()])
