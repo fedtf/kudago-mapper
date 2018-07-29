@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <item id="103272" type="event">
+    <id>103272</id>
+    <type>event</type>
+    <action>10960</action>
+    <hall_id>310712</hall_id>
+    <name>Original Meet 2017</name>
+    <category1>Фестивали</category1>
+    <category2>Музыкальные фестивали</category2>
+    <category3>Фестивали на открытом воздухе</category3>
+    <price_min>400 руб 1 коп</price_min>
+    <price_max>400 руб 2 коп</price_max>
+    <age_range>18-25</age_range>
+    <age_group_id>5</age_group_id>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/event/view/103272</originalUrl>
+    <date>10.9.17 13</date>
+    <end_date>10.9.17 20</end_date>
+  </item>
+  <item id="103271" type="event">
+    <id>103271</id>
+    <type>event</type>
+    <action>10960</action>
+    <hall_id>310712</hall_id>
+    <name>Original Meet 2017</name>
+    <category1>Фестивали</category1>
+    <category2>Музыкальные фестивали</category2>
+    <category3>Фестивали на открытом воздухе</category3>
+    <price_min>400 руб 1 коп</price_min>
+    <price_max>400 руб 2 коп</price_max>
+    <age_range>18-25</age_range>
+    <age_group_id>5</age_group_id>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/event/view/103271</originalUrl>
+    <date>9.9.17 13</date>
+    <end_date>9.9.17 21</end_date>
+  </item>
+  <item id="103270" type="event">
+    <id>103270</id>
+    <type>event</type>
+    <action>13985</action>
+    <hall_id>1099</hall_id>
+    <name>Балет</name>
+    <category1>Театр</category1>
+    <category2>Балет / Танец</category2>
+    <category3>Другое</category3>
+    <price_min>500 руб</price_min>
+    <price_max>1200 руб</price_max>
+    <age_range>35-60</age_range>
+    <age_group_id>1</age_group_id>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/event/view/103270</originalUrl>
+    <date>29.10.17 19</date>
+    <end_date>29.10.17 19:01</end_date>
+  </item>
+</root>

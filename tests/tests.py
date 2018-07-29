@@ -7,7 +7,8 @@ from django.test import TestCase
 from kudago_mapper.mappers import Mapper
 
 from .models import Action, Event, Hall, Artist, ActionThrough, ArtistThrough
-from .mappers import HallXMLMapper, EventXMLMapper, ArtistXMLMapper, ArtistThroughXMLMapper
+from .mappers import (HallXMLMapper, EventXMLMapper, ArtistXMLMapper, ArtistThroughXMLMapper,
+                      EventTransfXMLMapper, EventTransfMultipleXMLMapper)
 
 
 def get_payload(filepath):
@@ -55,9 +56,9 @@ class XMLMapperTest(TestCase):
 
         self.assertEqual(hall.name, 'Городское пространство "Порт Севкабель"')
         self.assertEqual(hall.url, 'https://spb.kassir.ru/kassir/hall/view/310712')
-        #self.assertEqual(hall.id, 310712)
+        self.assertEqual(hall.ext_id, 310712)
 
-        #self.assertEqual(Hall.objects.get(id=310712), hall)
+        self.assertEqual(Hall.objects.get(ext_id=310712), hall)
         self.assertEqual(Hall.objects.first(), hall)
 
     def test_multiple_objects_created(self):
@@ -117,3 +118,47 @@ class XMLMapperTest(TestCase):
 
         self.assertEqual(actions, [tuple(artist.actions.all()) for artist in ArtistThrough.objects.all()])
         self.assertEqual(ext_ids, list(ArtistThrough.objects.values_list('ext_id', flat=True)))
+
+    def test_single_field_transforms(self):
+        self.create_halls_and_actions()
+
+        payload = get_payload('raw_events.xml')
+
+        EventTransfXMLMapper(payload).save()
+
+        # custom parsing
+        prices = [(Decimal('400.1'), Decimal('400.2')),
+                  (Decimal('400.1'), Decimal('400.2')),
+                  (Decimal(500), Decimal(1200)),]
+        dates = [(datetime.datetime(2017, 9, 10, 13), datetime.datetime(2017, 9, 10, 20)),
+                 (datetime.datetime(2017, 9, 9, 13), datetime.datetime(2017, 9, 9, 21)),
+                 (datetime.datetime(2017, 10, 29, 19), datetime.datetime(2017, 10, 29, 19, 1))]
+
+        # custom transform
+        names = ['Origi...', 'Origi...', 'Балет']
+
+        self.assertEqual(dates, list(Event.objects.values_list('start_date', 'end_date')))
+        self.assertEqual(prices, list(Event.objects.values_list('price_min', 'price_max')))
+        self.assertEqual(names, list(Event.objects.values_list('name', flat=True)))
+
+    def test_multiple_field_transforms(self):
+        self.create_halls_and_actions()
+
+        payload = get_payload('raw_events.xml')
+
+        EventTransfMultipleXMLMapper(payload).save()
+
+        # field stacking (+ single field transform)
+        categories = ['фестивали,музыкальные фестивали,фестивали на открытом воздухе',
+                      'фестивали,музыкальные фестивали,фестивали на открытом воздухе',
+                      'театр,балет / танец,другое']
+        # field aggregation
+        durations = [datetime.timedelta(hours=7),
+                     datetime.timedelta(hours=8),
+                     datetime.timedelta(minutes=1)]
+        # field disaggregation
+        ages = [(18, 25), (18, 25), (35, 60)]
+
+        self.assertEqual(categories, list(Event.objects.values_list('category', flat=True)))
+        self.assertEqual(durations, list(Event.objects.values_list('duration', flat=True)))
+        self.assertEqual(ages, list(Event.objects.values_list('age_min', 'age_max')))
