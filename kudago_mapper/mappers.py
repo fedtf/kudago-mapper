@@ -1,11 +1,12 @@
 from xml.etree import ElementTree
 
 import six
-from django.forms import modelformset_factory, Field, BaseModelFormSet
+from django.forms import modelformset_factory, BaseModelFormSet
 from django.conf import settings
 
 from kudago_mapper.parsers import XmlListConfig
 from kudago_mapper.utils import DeclarativeMapperMetaclass, M2MThroughSavingModelForm
+from kudago_mapper.fields import Field
 
 
 DEFAULT_MAX_ITEMS = 2000
@@ -13,6 +14,17 @@ DEFAULT_MAX_ITEMS = 2000
 
 @six.add_metaclass(DeclarativeMapperMetaclass)
 class Mapper(object):
+    """
+    Abstract base class for all the mappers.
+    Subclasses should implement `parse_data` method.
+
+    Internal Meta class supports the following properties:
+        - model: model corresponding to the mapper (required)
+        - fields: model fields to be parsed (required)
+        - field_map: mapping from the mapper field names to the model field names
+
+    Any fields declared on the class will be added to the model fields.
+    """
     def __init__(self, data):
         if not hasattr(self, 'Meta') or not hasattr(self.Meta, 'model'):
             raise ValueError('No model is specified for {}.'.format(self.__class__.__name__))
@@ -58,14 +70,19 @@ class Mapper(object):
                         self.saved_forms.append(form)
                 return self.new_objects
 
-        self.data = self._parse_data(data)
+        self.data = self.parse_data(data)
         formdict = self._datalist_to_formdict(self.data)
         max_num = getattr(self.Meta, 'max_items', getattr(settings, 'KUDAGO_MAPPER_MAX_ITEMS', DEFAULT_MAX_ITEMS))
         self._formset = modelformset_factory(self.model, form=MapperModelForm, formset=MapperModelFormSet,
                                              fields=self.fields, max_num=max_num)(formdict)
 
-    def _parse_data(self, data):
-        raise NotImplementedError("You should subclass Mapper and implement the _parse_data method.")
+    def parse_data(self, data):
+        """
+        Abstract method to be implemented by subclasses.
+        :param data: raw data.
+        :return: parsed data as a list of dictionaries corresponding to objects.
+        """
+        raise NotImplementedError("You should subclass Mapper and implement the parse_data method.")
 
     def _datalist_to_formdict(self, data):
         formdict = {
@@ -80,6 +97,13 @@ class Mapper(object):
         return formdict
 
     def save(self, commit=True, raise_invalid=False):
+        """
+        Create and (possibly) save the parsed objects.
+        :param commit: if True (default), objects will be saved to the database.
+        :param raise_invalid: if False (default), invalid objects will be ignored and valid ones will be saved;
+        otherwise, invalid objects will raise an error and nothing will be saved.
+        :returns: a list of objects created.
+        """
         if not self._formset.is_valid() and raise_invalid:
             raise ValueError("The following errors were found: {}".format(self._formset.errors))
 
@@ -87,12 +111,27 @@ class Mapper(object):
 
 
 class XMLMapper(Mapper):
-    def _parse_data(self, data):
+    """
+    Mapper for xml input of type
+    <root>
+    <item>...</item>
+    <item>...</item>
+    ...
+    </root>
+    where each item corresponds to an object.
+    """
+    def parse_data(self, data):
         data = XmlListConfig(ElementTree.fromstring(data))
         return data
 
 
 class MapperComposite(object):
+    """
+    Represents a composition of mappers applied on the input with objects of multiple classes.
+
+    Internal Meta class supports the following properties:
+        - mappers: an iterable of at least 2 Mapper subclasses (required)
+    """
     def __init__(self, payload):
         if not hasattr(self, 'Meta') or not hasattr(self.Meta, 'mappers') or len(self.Meta.mappers) < 2:
             raise ValueError('{} requires at least 2 mappers.'.format(self.__class__.__name__))
@@ -102,6 +141,11 @@ class MapperComposite(object):
             self.mappers.append(mapper(payload))
 
     def save(self, commit=True):
+        """
+        Create and (possibly) save the parsed objects.
+        :param commit: if True (default), objects will be saved to the database.
+        :returns: a list of objects created.
+        """
         res = []
         for mapper in self.mappers:
             res.extend(mapper.save(commit=commit))

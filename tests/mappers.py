@@ -1,16 +1,14 @@
 import re
 
-from django import forms
-
 from kudago_mapper.mappers import XMLMapper, MapperComposite
-from kudago_mapper.fields import EnsureField
+from kudago_mapper import fields
 from kudago_mapper.transforms import MapperTransform, SplitMapperTransform, StackMapperTransform
 
 from .models import Hall, Event, Artist, ArtistThrough, ActionThrough, EventThrough
 
 
 class HallXMLMapper(XMLMapper):
-    type_ = EnsureField('hall')
+    type_ = fields.EnsureField('hall')
 
     class Meta:
         model = Hall
@@ -19,7 +17,7 @@ class HallXMLMapper(XMLMapper):
 
 
 class EventXMLMapper(XMLMapper):
-    type_ = EnsureField('event')
+    type_ = fields.EnsureField('event')
 
     class Meta:
         model = Event
@@ -36,7 +34,7 @@ class ArtistXMLMapper(XMLMapper):
         field_map = {'action': 'actions', }
 
 
-class ModelCommaSeparatedChoiceField(forms.ModelMultipleChoiceField):
+class ModelCommaSeparatedChoiceField(fields.ModelMultipleChoiceField):
     def clean(self, value):
         if value is not None and not isinstance(value, list):
             value = [item.strip() for item in value.split(",")]
@@ -45,7 +43,7 @@ class ModelCommaSeparatedChoiceField(forms.ModelMultipleChoiceField):
 
 class ArtistThroughXMLMapper(XMLMapper):
     actions = ModelCommaSeparatedChoiceField(queryset=ActionThrough.objects.all(), to_field_name='ext_id')
-    type_ = EnsureField('artist')
+    type_ = fields.EnsureField('artist')
 
     class Meta:
         model = ArtistThrough
@@ -53,14 +51,14 @@ class ArtistThroughXMLMapper(XMLMapper):
         field_map = {'id': 'ext_id', 'action': 'actions', 'type': 'type_'}
 
 
-class RubleField(forms.DecimalField):
+class RubleField(fields.DecimalField):
     def to_python(self, value):
         matches = re.findall(r'(\d+)\sруб(\s(\d+)\sкоп)?', value)
         value = '{}.{}'.format(matches[0][0], matches[0][2])
         return super().to_python(value)
 
 
-class TrimField(forms.CharField):
+class TrimField(fields.CharField):
     def __init__(self, *args, **kwargs):
         self.trim_length = kwargs.pop('trim_length')
         super(TrimField, self).__init__(*args, **kwargs)
@@ -75,8 +73,8 @@ class TrimField(forms.CharField):
 class EventTransfXMLMapper(XMLMapper):
     price_min = RubleField()
     price_max = RubleField()
-    start_date = forms.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
-    end_date = forms.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
+    start_date = fields.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
+    end_date = fields.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
     name = TrimField(trim_length=5)
 
     class Meta:
@@ -100,20 +98,20 @@ class IntSplitTransform(SplitMapperTransform):
         return {key: int(val) for key, val in res.items()}
 
 
-class LowerCharField(forms.CharField):
+class LowerCharField(fields.CharField):
     def clean(self, value):
         value = super(LowerCharField, self).clean(value)
         return value.lower()
 
 
 class EventTransfMultipleXMLMapper(EventTransfXMLMapper):
-    age_range = forms.CharField()
+    age_range = fields.CharField()
     category1 = LowerCharField()
     category2 = LowerCharField()
     category3 = LowerCharField()
 
     ttd_transform = TimesToDurationTransform()
-    age_range_transform = IntSplitTransform(from_field='age_range', to_fields=('age_min','age_max'), sep='-')
+    age_range_transform = IntSplitTransform(from_field='age_range', to_fields=('age_min', 'age_max'), sep='-')
     categories_transform = StackMapperTransform(from_fields=('category1', 'category2', 'category3'),
                                                 to_field='category')
 
@@ -121,8 +119,8 @@ class EventTransfMultipleXMLMapper(EventTransfXMLMapper):
 class EventTransfXMLMapper(XMLMapper):
     price_min = RubleField()
     price_max = RubleField()
-    start_date = forms.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
-    end_date = forms.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
+    start_date = fields.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
+    end_date = fields.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
     name = TrimField(trim_length=5)
 
     class Meta:
@@ -133,11 +131,11 @@ class EventTransfXMLMapper(XMLMapper):
 
 
 class CheapEventXMLMapper(EventXMLMapper):
-    price_min = forms.DecimalField(max_value=400)
+    price_min = fields.DecimalField(max_value=400)
 
 
 class ActionThroughXMLMapper(XMLMapper):
-    type_ = EnsureField('action')
+    type_ = fields.EnsureField('action')
 
     class Meta:
         model = ActionThrough

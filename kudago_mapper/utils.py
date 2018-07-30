@@ -1,14 +1,17 @@
 from collections import OrderedDict
 from itertools import chain
 
-from django.forms import Field, ModelForm
+from django.forms import ModelForm
 from django.db.models import ForeignKey
 
 from kudago_mapper.transforms import MapperTransform
+from kudago_mapper.fields import Field
 
 
 class DeclarativeMapperMetaclass(type):
-    """Collect Fields and Transforms declared on the base classes."""
+    """
+    Collect Fields and Transforms declared on the base classes.
+    """
     def __new__(mcs, name, bases, attrs):
         # Collect fields from current class.
         current_fields = []
@@ -53,6 +56,9 @@ class DeclarativeMapperMetaclass(type):
 
 
 class M2MThroughSavingModelForm(ModelForm):
+    # Django doesn't support `to_field` parameter for M2M and one has to use a through table to make non-pk links.
+    # It also doesn't support automatic saving for M2M with through tables.
+    # This class provides a limited solution.
     def _save_m2m(self):
         cleaned_data = self.cleaned_data
         opts = self.instance._meta

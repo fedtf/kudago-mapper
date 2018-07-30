@@ -4,12 +4,12 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from kudago_mapper.mappers import Mapper, XMLMapper
+from kudago_mapper.mappers import Mapper
 
 from .models import Action, Event, Hall, Artist, ActionThrough, ArtistThrough, EventThrough
 from .mappers import (HallXMLMapper, EventXMLMapper, ArtistXMLMapper, ArtistThroughXMLMapper,
                       EventTransfXMLMapper, EventTransfMultipleXMLMapper, CheapEventXMLMapper,
-                      HallActionMapperComposite, KassirMapperComposite, ActionThroughXMLMapper)
+                      HallActionMapperComposite, KassirMapperComposite,)
 
 
 def get_payload(filepath):
@@ -35,6 +35,33 @@ class MapperTest(TestCase):
 
         with self.assertRaises(ValueError):
             WithoutModelMapper(payload)
+
+    def test_max_items(self):
+        class DummyMapper(Mapper):
+            def parse_data(self, data):
+                return {}
+
+            class Meta:
+                model = Hall
+                fields = '__all__'
+
+        payload = ''
+
+        mapper = DummyMapper(payload)
+        self.assertEqual(2000, mapper._formset.max_num)
+
+        with self.settings(KUDAGO_MAPPER_MAX_ITEMS=5000):
+            mapper = DummyMapper(payload)
+            self.assertEqual(5000, mapper._formset.max_num)
+
+            class LargeDummyMapper(DummyMapper):
+                class Meta:
+                    model = Hall
+                    max_items = 10000
+                    fields = '__all__'
+
+            mapper = LargeDummyMapper(payload)
+            self.assertEqual(10000, mapper._formset.max_num)
 
 
 class XMLMapperTest(TestCase):
@@ -130,7 +157,7 @@ class XMLMapperTest(TestCase):
         # custom parsing
         prices = [(Decimal('400.1'), Decimal('400.2')),
                   (Decimal('400.1'), Decimal('400.2')),
-                  (Decimal(500), Decimal(1200)),]
+                  (Decimal(500), Decimal(1200))]
         dates = [(datetime.datetime(2017, 9, 10, 13), datetime.datetime(2017, 9, 10, 20)),
                  (datetime.datetime(2017, 9, 9, 13), datetime.datetime(2017, 9, 9, 21)),
                  (datetime.datetime(2017, 10, 29, 19), datetime.datetime(2017, 10, 29, 19, 1))]
@@ -200,29 +227,10 @@ class XMLMapperTest(TestCase):
 
         action0, action1 = list(ActionThrough.objects.all()[:2])
         artist_actions = [(action0, action1,), (action0, action1,), (action1,)]
-        event_actions = [action0, action0, action1,]
+        event_actions = [action0, action0, action1]
         hall0, hall1 = list(Hall.objects.all()[:2])
         halls = [hall0, hall0, hall1]
 
         self.assertEqual(artist_actions, [tuple(artist.actions.all()) for artist in ArtistThrough.objects.all()])
         self.assertEqual(halls, [event.hall for event in EventThrough.objects.all()])
         self.assertEqual(event_actions, [event.action for event in EventThrough.objects.all()])
-
-    def test_max_items(self):
-        payload = get_payload('multiple_items.xml')
-
-        hall_mapper = HallXMLMapper(payload)
-        self.assertEqual(2000, hall_mapper._formset.max_num)
-
-        with self.settings(KUDAGO_MAPPER_MAX_ITEMS=5000):
-            hall_mapper = HallXMLMapper(payload)
-            self.assertEqual(5000, hall_mapper._formset.max_num)
-
-            class LargeHallXMLMapper(XMLMapper):
-                class Meta:
-                    model = Hall
-                    max_items = 10000
-                    fields = '__all__'
-
-            hall_mapper = LargeHallXMLMapper(payload)
-            self.assertEqual(10000, hall_mapper._formset.max_num)
