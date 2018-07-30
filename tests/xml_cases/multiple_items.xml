@@ -6,7 +6,7 @@
     <name>Городское пространство "Порт Севкабель"</name>
     <originalUrl>https://spb.kassir.ru/kassir/hall/view/310712</originalUrl>
   </item>
-  <item key="1099" type="hall">
+  <item id="1099" type="hall">
     <id>1099</id>
     <type>hall</type>
     <name>ДК Выборгский</name>

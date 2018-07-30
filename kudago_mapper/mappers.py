@@ -1,10 +1,14 @@
 from xml.etree import ElementTree
 
 import six
-from django.forms import modelformset_factory, Field
+from django.forms import modelformset_factory, Field, BaseModelFormSet
+from django.conf import settings
 
 from kudago_mapper.parsers import XmlListConfig
 from kudago_mapper.utils import DeclarativeMapperMetaclass, M2MThroughSavingModelForm
+
+
+DEFAULT_MAX_ITEMS = 2000
 
 
 @six.add_metaclass(DeclarativeMapperMetaclass)
@@ -38,9 +42,27 @@ class Mapper(object):
                     self.fields.update({field: Field() for field in res})
                 return cleaned_data
 
+        class MapperModelFormSet(BaseModelFormSet):
+            def save_new_objects(self, commit=True):
+                self.new_objects = []
+                for form in self.extra_forms:
+                    if not form.has_changed():
+                        continue
+                    if self.can_delete and self._should_delete_form(form):
+                        continue
+                    try:
+                        self.new_objects.append(self.save_new(form, commit=commit))
+                    except ValueError:
+                        continue
+                    if not commit:
+                        self.saved_forms.append(form)
+                return self.new_objects
+
         self.data = self._parse_data(data)
         formdict = self._datalist_to_formdict(self.data)
-        self._formset = modelformset_factory(self.model, form=MapperModelForm, fields=self.fields)(formdict)
+        max_num = getattr(self.Meta, 'max_items', getattr(settings, 'KUDAGO_MAPPER_MAX_ITEMS', DEFAULT_MAX_ITEMS))
+        self._formset = modelformset_factory(self.model, form=MapperModelForm, formset=MapperModelFormSet,
+                                             fields=self.fields, max_num=max_num)(formdict)
 
     def _parse_data(self, data):
         raise NotImplementedError("You should subclass Mapper and implement the _parse_data method.")
@@ -57,14 +79,31 @@ class Mapper(object):
 
         return formdict
 
-    def save(self, commit=True):
-        if self._formset.is_valid():
-            return self._formset.save(commit=commit)
-        else:
+    def save(self, commit=True, raise_invalid=False):
+        if not self._formset.is_valid() and raise_invalid:
             raise ValueError("The following errors were found: {}".format(self._formset.errors))
+
+        return self._formset.save(commit=commit)
 
 
 class XMLMapper(Mapper):
     def _parse_data(self, data):
         data = XmlListConfig(ElementTree.fromstring(data))
         return data
+
+
+class MapperComposite(object):
+    def __init__(self, payload):
+        if not hasattr(self, 'Meta') or not hasattr(self.Meta, 'mappers') or len(self.Meta.mappers) < 2:
+            raise ValueError('{} requires at least 2 mappers.'.format(self.__class__.__name__))
+        self.mappers = []
+
+        for mapper in self.Meta.mappers:
+            self.mappers.append(mapper(payload))
+
+    def save(self, commit=True):
+        res = []
+        for mapper in self.mappers:
+            res.extend(mapper.save(commit=commit))
+
+        return res

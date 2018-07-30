@@ -2,32 +2,38 @@ import re
 
 from django import forms
 
-from kudago_mapper.mappers import XMLMapper
+from kudago_mapper.mappers import XMLMapper, MapperComposite
+from kudago_mapper.fields import EnsureField
 from kudago_mapper.transforms import MapperTransform, SplitMapperTransform, StackMapperTransform
 
-from .models import Hall, Event, Artist, ArtistThrough, ActionThrough
+from .models import Hall, Event, Artist, ArtistThrough, ActionThrough, EventThrough
 
 
 class HallXMLMapper(XMLMapper):
+    type_ = EnsureField('hall')
+
     class Meta:
         model = Hall
         fields = ('name', 'url', 'ext_id')
-        field_map = {'originalUrl': 'url', 'id': 'ext_id'}
+        field_map = {'originalUrl': 'url', 'id': 'ext_id', 'type': 'type_'}
 
 
 class EventXMLMapper(XMLMapper):
+    type_ = EnsureField('event')
+
     class Meta:
         model = Event
         fields = ('url', 'start_date', 'hall', 'ext_id', 'end_date', 'name', 'category',
                   'action', 'price_min', 'price_max')
-        field_map = {'originalUrl': 'url', 'date': 'start_date', 'hall_id': 'hall', 'id': 'ext_id'}
+        field_map = {'originalUrl': 'url', 'date': 'start_date', 'hall_id': 'hall', 'id': 'ext_id',
+                     'type': 'type_'}
 
 
 class ArtistXMLMapper(XMLMapper):
     class Meta:
         model = Artist
         fields = ('name', 'actions',)
-        field_map = {'action': 'actions'}
+        field_map = {'action': 'actions', }
 
 
 class ModelCommaSeparatedChoiceField(forms.ModelMultipleChoiceField):
@@ -39,11 +45,12 @@ class ModelCommaSeparatedChoiceField(forms.ModelMultipleChoiceField):
 
 class ArtistThroughXMLMapper(XMLMapper):
     actions = ModelCommaSeparatedChoiceField(queryset=ActionThrough.objects.all(), to_field_name='ext_id')
+    type_ = EnsureField('artist')
 
     class Meta:
         model = ArtistThrough
         fields = ('ext_id', 'name', )
-        field_map = {'id': 'ext_id', 'action': 'actions'}
+        field_map = {'id': 'ext_id', 'action': 'actions', 'type': 'type_'}
 
 
 class RubleField(forms.DecimalField):
@@ -98,6 +105,7 @@ class LowerCharField(forms.CharField):
         value = super(LowerCharField, self).clean(value)
         return value.lower()
 
+
 class EventTransfMultipleXMLMapper(EventTransfXMLMapper):
     age_range = forms.CharField()
     category1 = LowerCharField()
@@ -108,3 +116,50 @@ class EventTransfMultipleXMLMapper(EventTransfXMLMapper):
     age_range_transform = IntSplitTransform(from_field='age_range', to_fields=('age_min','age_max'), sep='-')
     categories_transform = StackMapperTransform(from_fields=('category1', 'category2', 'category3'),
                                                 to_field='category')
+
+
+class EventTransfXMLMapper(XMLMapper):
+    price_min = RubleField()
+    price_max = RubleField()
+    start_date = forms.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
+    end_date = forms.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
+    name = TrimField(trim_length=5)
+
+    class Meta:
+        model = Event
+        fields = ('url', 'start_date', 'hall', 'ext_id', 'end_date', 'name',
+                  'action', 'price_min', 'price_max')
+        field_map = {'originalUrl': 'url', 'date': 'start_date', 'hall_id': 'hall', 'id': 'ext_id'}
+
+
+class CheapEventXMLMapper(EventXMLMapper):
+    price_min = forms.DecimalField(max_value=400)
+
+
+class ActionThroughXMLMapper(XMLMapper):
+    type_ = EnsureField('action')
+
+    class Meta:
+        model = ActionThrough
+        fields = '__all__'
+        field_map = {'originalUrl': 'url', 'id': 'ext_id', 'type': 'type_'}
+
+
+class HallActionMapperComposite(MapperComposite):
+    class Meta:
+        mappers = (HallXMLMapper, ActionThroughXMLMapper)
+
+
+class EventThroughXMLMapper(EventXMLMapper):
+    class Meta:
+        model = EventThrough
+        # duplicated; get rid of Meta syntax?
+        fields = ('url', 'start_date', 'hall', 'ext_id', 'end_date', 'name',
+                  'action', 'price_min', 'price_max')
+        field_map = {'originalUrl': 'url', 'date': 'start_date', 'hall_id': 'hall', 'id': 'ext_id',
+                     'type': 'type_'}
+
+
+class KassirMapperComposite(MapperComposite):
+    class Meta:
+        mappers = (HallXMLMapper, ActionThroughXMLMapper, ArtistThroughXMLMapper, EventThroughXMLMapper)

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <item id="310712" type="hall">
+    <id>310712</id>
+    <type>hall</type>
+    <name>Городское пространство "Порт Севкабель"</name>
+    <originalUrl>https://spb.kassir.ru/kassir/hall/view/310712</originalUrl>
+  </item>
+  <item id="1099" type="hall">
+    <id>1099</id>
+    <type>hall</type>
+    <name>ДК Выборгский</name>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/hall/view/1099</originalUrl>
+  </item>
+  <item id="1022" type="hall">
+    <id>1022</id>
+    <type>hall</type>
+    <name>ДК Выборгский (Малый зал)</name>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/hall/view/1022</originalUrl>
+  </item>
+  <item id="1061" type="hall">
+    <id>1061</id>
+    <type>hall</type>
+    <name>Концертный Зал Колизей</name>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/hall/view/1061</originalUrl>
+  </item>
+  <item id="10960" type="action">
+    <id>10960</id>
+    <type>action</type>
+    <name>Original Meet 2017</name>
+    <category>Фестивали</category>
+    <category>Музыкальные фестивали</category>
+    <category>Фестивали на открытом воздухе</category>
+    <category>Другое</category>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/action/view/10960</originalUrl>
+  </item>
+  <item id="13985" type="action">
+    <id>13985</id>
+    <type>action</type>
+    <name>Балет на льду "Вечер балета"</name>
+    <category>Театр</category>
+    <category>Балет / Танец</category>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/action/view/13985</originalUrl>
+  </item>
+  <item id="12454" type="action">
+    <id>12454</id>
+    <type>action</type>
+    <name>Спектакль "Уикенд по-французски"</name>
+    <category>Театр</category>
+    <category>Гастроли</category>
+    <category>Комедия</category>
+    <originalUrl>
+    https://spb.kassir.ru/kassir/action/view/12454</originalUrl>
+  </item>
+</root>
