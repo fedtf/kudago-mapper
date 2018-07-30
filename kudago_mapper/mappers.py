@@ -110,7 +110,7 @@ class Mapper(object):
         return self._formset.save(commit=commit)
 
 
-class XMLMapper(Mapper):
+class RSSMapper(Mapper):
     """
     Mapper for xml input of type
     <root>

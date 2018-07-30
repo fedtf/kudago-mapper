@@ -1,13 +1,13 @@
 import re
 
-from kudago_mapper.mappers import XMLMapper, MapperComposite
+from kudago_mapper.mappers import RSSMapper, MapperComposite
 from kudago_mapper import fields
 from kudago_mapper.transforms import MapperTransform, SplitMapperTransform, StackMapperTransform
 
 from .models import Hall, Event, Artist, ArtistThrough, ActionThrough, EventThrough
 
 
-class HallXMLMapper(XMLMapper):
+class HallRSSMapper(RSSMapper):
     type_ = fields.EnsureField('hall')
 
     class Meta:
@@ -16,7 +16,7 @@ class HallXMLMapper(XMLMapper):
         field_map = {'originalUrl': 'url', 'id': 'ext_id', 'type': 'type_'}
 
 
-class EventXMLMapper(XMLMapper):
+class EventRSSMapper(RSSMapper):
     type_ = fields.EnsureField('event')
 
     class Meta:
@@ -27,7 +27,7 @@ class EventXMLMapper(XMLMapper):
                      'type': 'type_'}
 
 
-class ArtistXMLMapper(XMLMapper):
+class ArtistRSSMapper(RSSMapper):
     class Meta:
         model = Artist
         fields = ('name', 'actions',)
@@ -41,7 +41,7 @@ class ModelCommaSeparatedChoiceField(fields.ModelMultipleChoiceField):
         return super(ModelCommaSeparatedChoiceField, self).clean(value)
 
 
-class ArtistThroughXMLMapper(XMLMapper):
+class ArtistThroughRSSMapper(RSSMapper):
     actions = ModelCommaSeparatedChoiceField(queryset=ActionThrough.objects.all(), to_field_name='ext_id')
     type_ = fields.EnsureField('artist')
 
@@ -70,7 +70,7 @@ class TrimField(fields.CharField):
         return value
 
 
-class EventTransfXMLMapper(XMLMapper):
+class EventTransfRSSMapper(RSSMapper):
     price_min = RubleField()
     price_max = RubleField()
     start_date = fields.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
@@ -104,7 +104,7 @@ class LowerCharField(fields.CharField):
         return value.lower()
 
 
-class EventTransfMultipleXMLMapper(EventTransfXMLMapper):
+class EventTransfMultipleRSSMapper(EventTransfRSSMapper):
     age_range = fields.CharField()
     category1 = LowerCharField()
     category2 = LowerCharField()
@@ -116,7 +116,7 @@ class EventTransfMultipleXMLMapper(EventTransfXMLMapper):
                                                 to_field='category')
 
 
-class EventTransfXMLMapper(XMLMapper):
+class EventTransfRSSMapper(RSSMapper):
     price_min = RubleField()
     price_max = RubleField()
     start_date = fields.DateTimeField(input_formats=['%d.%m.%y %H', '%d.%m.%y %H:%M'])
@@ -130,11 +130,11 @@ class EventTransfXMLMapper(XMLMapper):
         field_map = {'originalUrl': 'url', 'date': 'start_date', 'hall_id': 'hall', 'id': 'ext_id'}
 
 
-class CheapEventXMLMapper(EventXMLMapper):
+class CheapEventRSSMapper(EventRSSMapper):
     price_min = fields.DecimalField(max_value=400)
 
 
-class ActionThroughXMLMapper(XMLMapper):
+class ActionThroughRSSMapper(RSSMapper):
     type_ = fields.EnsureField('action')
 
     class Meta:
@@ -145,10 +145,10 @@ class ActionThroughXMLMapper(XMLMapper):
 
 class HallActionMapperComposite(MapperComposite):
     class Meta:
-        mappers = (HallXMLMapper, ActionThroughXMLMapper)
+        mappers = (HallRSSMapper, ActionThroughRSSMapper)
 
 
-class EventThroughXMLMapper(EventXMLMapper):
+class EventThroughRSSMapper(EventRSSMapper):
     class Meta:
         model = EventThrough
         # duplicated; get rid of Meta syntax?
@@ -160,4 +160,4 @@ class EventThroughXMLMapper(EventXMLMapper):
 
 class KassirMapperComposite(MapperComposite):
     class Meta:
-        mappers = (HallXMLMapper, ActionThroughXMLMapper, ArtistThroughXMLMapper, EventThroughXMLMapper)
+        mappers = (HallRSSMapper, ActionThroughRSSMapper, ArtistThroughRSSMapper, EventThroughRSSMapper)

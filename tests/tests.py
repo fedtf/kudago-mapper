@@ -7,8 +7,8 @@ from django.test import TestCase
 from kudago_mapper.mappers import Mapper
 
 from .models import Action, Event, Hall, Artist, ActionThrough, ArtistThrough, EventThrough
-from .mappers import (HallXMLMapper, EventXMLMapper, ArtistXMLMapper, ArtistThroughXMLMapper,
-                      EventTransfXMLMapper, EventTransfMultipleXMLMapper, CheapEventXMLMapper,
+from .mappers import (HallRSSMapper, EventRSSMapper, ArtistRSSMapper, ArtistThroughRSSMapper,
+                      EventTransfRSSMapper, EventTransfMultipleRSSMapper, CheapEventRSSMapper,
                       HallActionMapperComposite, KassirMapperComposite,)
 
 
@@ -64,7 +64,7 @@ class MapperTest(TestCase):
             self.assertEqual(10000, mapper._formset.max_num)
 
 
-class XMLMapperTest(TestCase):
+class RSSMapperTest(TestCase):
     def create_halls_and_actions(self):
         action0 = Action.objects.create(id=10960, ext_id=10960, name='Original Meet 2017',
                                         url='https://spb.kassir.ru/kassir/action/view/10960')
@@ -80,7 +80,7 @@ class XMLMapperTest(TestCase):
     def test_single_object_created(self):
         payload = get_payload('single_item.xml')
 
-        hall = HallXMLMapper(payload).save()[0]
+        hall = HallRSSMapper(payload).save()[0]
 
         self.assertEqual(hall.name, 'Городское пространство "Порт Севкабель"')
         self.assertEqual(hall.url, 'https://spb.kassir.ru/kassir/hall/view/310712')
@@ -92,7 +92,7 @@ class XMLMapperTest(TestCase):
     def test_multiple_objects_created(self):
         payload = get_payload('multiple_items.xml')
 
-        halls = HallXMLMapper(payload).save()
+        halls = HallRSSMapper(payload).save()
 
         names = ['Городское пространство "Порт Севкабель"',
                  'ДК Выборгский', 'ДК Выборгский (Малый зал)',
@@ -110,7 +110,7 @@ class XMLMapperTest(TestCase):
 
         payload = get_payload('events.xml')
 
-        EventXMLMapper(payload).save()
+        EventRSSMapper(payload).save()
 
         dates = [datetime.datetime(2017, 9, 10, 13),
                  datetime.datetime(2017, 9, 9, 13),
@@ -126,7 +126,7 @@ class XMLMapperTest(TestCase):
 
         payload = get_payload('artists.xml')
 
-        ArtistXMLMapper(payload).save()
+        ArtistRSSMapper(payload).save()
 
         actions = [(action0, action1,), (action0, action1,), (action0, action1)]
         self.assertEqual(actions, [tuple(artist.actions.all()) for artist in Artist.objects.all()])
@@ -139,7 +139,7 @@ class XMLMapperTest(TestCase):
 
         payload = get_payload('artists2.xml')
 
-        ArtistThroughXMLMapper(payload).save()
+        ArtistThroughRSSMapper(payload).save()
 
         actions = [(action0, action1,), (action0, action1,), (action1,)]
         ext_ids = [210, 526, 926]
@@ -152,7 +152,7 @@ class XMLMapperTest(TestCase):
 
         payload = get_payload('raw_events.xml')
 
-        EventTransfXMLMapper(payload).save()
+        EventTransfRSSMapper(payload).save()
 
         # custom parsing
         prices = [(Decimal('400.1'), Decimal('400.2')),
@@ -174,7 +174,7 @@ class XMLMapperTest(TestCase):
 
         payload = get_payload('raw_events.xml')
 
-        EventTransfMultipleXMLMapper(payload).save()
+        EventTransfMultipleRSSMapper(payload).save()
 
         # field stacking (+ single field transform)
         categories = ['фестивали,музыкальные фестивали,фестивали на открытом воздухе',
@@ -196,7 +196,7 @@ class XMLMapperTest(TestCase):
 
         payload = get_payload('events.xml')
 
-        CheapEventXMLMapper(payload).save()
+        CheapEventRSSMapper(payload).save()
 
         prices = [Decimal(400), Decimal(400)]
         self.assertEqual(prices, list(Event.objects.values_list('price_max', flat=True)))
